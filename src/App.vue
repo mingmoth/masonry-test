@@ -1,5 +1,10 @@
 <script setup>
+import { onMounted } from 'vue';
+import getImages from './api';
 
+onMounted(async () => {
+    await getImages();
+});
 </script>
 
 <template>
