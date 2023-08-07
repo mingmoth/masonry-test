@@ -1,10 +1,45 @@
 <script setup>
+import { onMounted, ref } from 'vue';
+import getImages, { sleep } from './api';
+import useMasonry from './hook/masonry';
+
+import LayoutMasonry from './components/LayoutMasonry.vue';
+import CardItem from './components/CardItem.vue';
+import LoadingCard from './components/LoadingCard.vue';
+
+const images = ref([]);
+const isLoading = ref(true);
+const imagesSet = ref([]);
+
+onMounted(async () => {
+    const fetchImages = await getImages(3);
+    imagesSet.value = new Array(fetchImages.length);
+    const { masonrySortedItems } = useMasonry(fetchImages);
+    images.value = images.value.concat(masonrySortedItems.value);
+    await sleep(2000);
+    isLoading.value = false;
+});
 
 </script>
 
 <template>
     <div>
         <h1>App</h1>
+        <LayoutMasonry>
+            <template v-if="isLoading">
+                <LoadingCard
+                    v-for="(item, index) in imagesSet"
+                    :key="index"
+                />
+            </template>
+            <template v-else>
+                <CardItem
+                    v-for="image in images"
+                    :key="image.id"
+                    :card="image"
+                />
+            </template>
+        </LayoutMasonry>
     </div>
 </template>
 
