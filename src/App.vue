@@ -1,18 +1,20 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import getImages from './api';
+import getImages, { sleep } from './api';
 
 import LayoutMasonry from './components/LayoutMasonry.vue';
 import CardItem from './components/CardItem.vue';
+import LoadingCard from './components/LoadingCard.vue';
 
 const images = ref([]);
 const isLoading = ref(true);
-const imageNum = ref(0);
+const imagesSet = ref([]);
 
 onMounted(async () => {
     const fetchImages = await getImages();
-    imageNum.value = fetchImages.length;
+    imagesSet.value = new Array(fetchImages.length);
     images.value = [...fetchImages];
+    await sleep(2000);
     isLoading.value = false;
 });
 
@@ -23,13 +25,20 @@ const filteredImages = computed(() => images.value.filter(image => Boolean(image
 <template>
     <div>
         <h1>App</h1>
-        <div v-if="isLoading">isLoading</div>
-        <LayoutMasonry v-else>
-            <CardItem
-                v-for="image in filteredImages"
-                :key="image.id"
-                :card="image"
-            />
+        <LayoutMasonry>
+            <template v-if="isLoading">
+                <LoadingCard
+                    v-for="(item, index) in imagesSet"
+                    :key="index"
+                />
+            </template>
+            <template v-else>
+                <CardItem
+                    v-for="image in filteredImages"
+                    :key="image.id"
+                    :card="image"
+                />
+            </template>
         </LayoutMasonry>
     </div>
 </template>
