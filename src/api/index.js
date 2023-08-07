@@ -8,13 +8,12 @@ export default async function getImages (page = 3) {
         if (response.status !== 200 || !Array.isArray(response.data)) {
             throw new Error('Can not fetch images');
         }
-        await sleep(2000);
         return response.data;
     } catch (error) {
         console.error(error);
     }
 }
 
-function sleep (delay) {
+export function sleep (delay) {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
