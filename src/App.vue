@@ -1,6 +1,7 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import getImages, { sleep } from './api';
+import useMasonry from './hook/masonry';
 
 import LayoutMasonry from './components/LayoutMasonry.vue';
 import CardItem from './components/CardItem.vue';
@@ -11,14 +12,13 @@ const isLoading = ref(true);
 const imagesSet = ref([]);
 
 onMounted(async () => {
-    const fetchImages = await getImages();
+    const fetchImages = await getImages(3);
     imagesSet.value = new Array(fetchImages.length);
-    images.value = [...fetchImages];
+    const { masonrySortedItems } = useMasonry(fetchImages);
+    images.value = images.value.concat(masonrySortedItems.value);
     await sleep(2000);
     isLoading.value = false;
 });
-
-const filteredImages = computed(() => images.value.filter(image => Boolean(image.url)));
 
 </script>
 
@@ -34,7 +34,7 @@ const filteredImages = computed(() => images.value.filter(image => Boolean(image
             </template>
             <template v-else>
                 <CardItem
-                    v-for="image in filteredImages"
+                    v-for="image in images"
                     :key="image.id"
                     :card="image"
                 />

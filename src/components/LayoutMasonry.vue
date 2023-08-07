@@ -1,8 +1,16 @@
 <script setup>
+import useMasonry from '../hook/masonry';
+
+const { columnCounts } = useMasonry();
 </script>
 
 <template>
-    <div class="masonry">
+    <div
+        class="masonry"
+        :style="{
+            'column-count': columnCounts,
+        }"
+    >
         <slot></slot>
     </div>
 </template>
