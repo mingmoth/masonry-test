@@ -5,7 +5,7 @@ import Loading from './LoadingShimmer.vue';
 <template>
     <figure class="card">
         <div class="card-image">
-            <Loading />
+            <Loading class="card-image-loading"/>
         </div>
         <figcaption class="card-info">
             <Loading class="card-loading-block"/>
@@ -20,8 +20,18 @@ import Loading from './LoadingShimmer.vue';
 .card {
     height: 200px;
 
+    &-image {
+        margin-bottom: 6px;
+
+        &-loading {
+            border-radius: 8px;
+        }
+    }
+
     &-loading-block {
-        height: 20px;
+        width: 70%;
+        height: 18px;
+        margin-bottom: 4px;
     }
 }
 
