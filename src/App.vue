@@ -49,6 +49,18 @@ onMounted(async () => {
                 />
             </template>
         </MasonryWall>
+        <DividerLine />
+        <div
+            class="grid"
+            data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200 }'
+        >
+            <CardItem
+                v-for="image in images"
+                :key="image.id"
+                :card="image"
+                class="grid-item"
+            />
+        </div>
     </div>
 </template>
 
