@@ -12,11 +12,16 @@ const images = ref([]);
 const isLoading = ref(true);
 const imagesSet = ref([]);
 
+const { columnCounts, getSortArray } = useMasonry();
+
+function appendImages (newImages) {
+    images.value = images.value.concat(newImages);
+}
+
 onMounted(async () => {
     const fetchImages = await getImages(3);
     imagesSet.value = new Array(fetchImages.length);
-    const { masonrySortedItems } = useMasonry(fetchImages);
-    images.value = images.value.concat(masonrySortedItems.value);
+    appendImages(getSortArray(fetchImages, columnCounts.value));
     await sleep(2000);
     isLoading.value = false;
 });
