@@ -8,7 +8,12 @@ export default async function getImages (page = 3) {
         if (response.status !== 200 || !Array.isArray(response.data)) {
             throw new Error('Can not fetch images');
         }
-        return response.data;
+        return response.data.map((image) => {
+            return {
+                ...image,
+                isLoading: true
+            };
+        });
     } catch (error) {
         console.error(error);
     }

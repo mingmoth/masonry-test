@@ -22,6 +22,7 @@ export default function useMasonry (array = []) {
             for (let i = 0; i < array.length; i += cols) {
                 const _val = array[i + col];
                 if (_val !== undefined) {
+                    _val.isLoading = false;
                     result.push(_val);
                 }
             }

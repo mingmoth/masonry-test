@@ -14,15 +14,16 @@ const imagesSet = ref([]);
 
 const { columnCounts, getSortArray } = useMasonry();
 
-function appendImages (newImages) {
-    images.value = images.value.concat(newImages);
-}
+// function appendImages (newImages) {
+//     images.value = images.value.concat(newImages);
+// }
 
 onMounted(async () => {
     const fetchImages = await getImages(3);
     imagesSet.value = new Array(fetchImages.length);
-    appendImages(getSortArray(fetchImages, columnCounts.value));
+    images.value = fetchImages;
     await sleep(2000);
+    images.value = getSortArray(fetchImages, columnCounts.value);
     isLoading.value = false;
 });
 
@@ -32,19 +33,12 @@ onMounted(async () => {
     <div>
         <h1>App</h1>
         <LayoutMasonry>
-            <template v-if="isLoading">
-                <LoadingCard
-                    v-for="(item, index) in imagesSet"
-                    :key="index"
-                />
-            </template>
-            <template v-else>
-                <CardItem
-                    v-for="image in images"
-                    :key="image.id"
-                    :card="image"
-                />
-            </template>
+            <component
+                v-for="image in images"
+                :key="image.id"
+                :is="image.isLoading ? LoadingCard : CardItem"
+                :card="image"
+            />
         </LayoutMasonry>
         <!-- <DividerLine />
         <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
