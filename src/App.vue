@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import getImages, { sleep } from './api';
 import useMasonry from './hook/masonry';
 
-import DividerLine from './components/DividerLine.vue';
+// import DividerLine from './components/DividerLine.vue';
 import LayoutMasonry from './components/LayoutMasonry.vue';
 import CardItem from './components/CardItem.vue';
 import LoadingCard from './components/LoadingCard.vue';
@@ -46,7 +46,7 @@ onMounted(async () => {
                 />
             </template>
         </LayoutMasonry>
-        <DividerLine />
+        <!-- <DividerLine />
         <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
             <template #default="{ item }">
                 <CardItem
@@ -71,7 +71,8 @@ onMounted(async () => {
                 :key="image.id"
                 :card="image"
             />
-        </div>
+        </div> -->
+        <button class="load-more"> Load More Images</button>
     </div>
 </template>
 
@@ -96,5 +97,11 @@ onMounted(async () => {
   &__item {
     max-width: 230px;
   }
+}
+
+.load-more {
+  position: fixed;
+  top: 5%;
+  right: 3%;
 }
 </style>
