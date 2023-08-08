@@ -42,17 +42,35 @@ onMounted(async () => {
             </template>
         </LayoutMasonry>
         <DividerLine />
-        <MasonryWall :items="images" :gap="16" :ssr-columns="4" :min-columns="1" :max-columns="5" :column-width="220">
+        <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
             <template #default="{ item }">
                 <CardItem
                     :card="item"
                 />
             </template>
         </MasonryWall>
+        <DividerLine />
+        <div
+            v-masonry
+            transition-duration=".3s"
+            item-selector=".masonry-container__item"
+            class="masonry-container"
+            gutter="16"
+            fit-width="true"
+            column-width="230"
+        >
+            <CardItem
+                v-masonry-tile
+                class="masonry-container__item"
+                v-for="(image) in images"
+                :key="image.id"
+                :card="image"
+            />
+        </div>
     </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -64,5 +82,14 @@ onMounted(async () => {
 }
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
+}
+
+.masonry-container {
+  display: grid;
+  margin: 0 auto;
+
+  &__item {
+    max-width: 230px;
+  }
 }
 </style>
