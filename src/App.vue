@@ -1,29 +1,37 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import getImages, { sleep } from './api';
-import useMasonry from './hook/masonry';
+// import useMasonry from './hook/masonry';
 
 // import DividerLine from './components/DividerLine.vue';
-import LayoutMasonry from './components/LayoutMasonry.vue';
+// import LayoutMasonry from './components/LayoutMasonry.vue';
 import CardItem from './components/CardItem.vue';
 import LoadingCard from './components/LoadingCard.vue';
 
 const images = ref([]);
 const isLoading = ref(true);
-const imagesSet = ref([]);
+// const imagesSet = ref([]);
+const currentPage = ref(3);
 
-const { columnCounts, getSortArray } = useMasonry();
+// const { columnCounts, getSortArray } = useMasonry();
 
-// function appendImages (newImages) {
-//     images.value = images.value.concat(newImages);
-// }
+async function getNextPageImages () {
+    currentPage.value += 1;
+    const fetchImages = await getImages(currentPage.value);
+    images.value.push(...fetchImages);
+    await sleep(2000);
+    images.value.splice(images.value.length - fetchImages.length, 10);
+    const sortedImages = fetchImages.map(image => {
+        return {
+            ...image,
+            isLoading: false
+        };
+    });
+    images.value.push(...sortedImages);
+}
 
 onMounted(async () => {
-    const fetchImages = await getImages(3);
-    imagesSet.value = new Array(fetchImages.length);
-    images.value = fetchImages;
-    await sleep(2000);
-    images.value = getSortArray(fetchImages, columnCounts.value);
+    await getNextPageImages();
     isLoading.value = false;
 });
 
@@ -32,14 +40,14 @@ onMounted(async () => {
 <template>
     <div>
         <h1>App</h1>
-        <LayoutMasonry>
+        <!-- <LayoutMasonry>
             <component
                 v-for="image in images"
                 :key="image.id"
                 :is="image.isLoading ? LoadingCard : CardItem"
                 :card="image"
             />
-        </LayoutMasonry>
+        </LayoutMasonry> -->
         <!-- <DividerLine />
         <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
             <template #default="{ item }">
@@ -47,8 +55,8 @@ onMounted(async () => {
                     :card="item"
                 />
             </template>
-        </MasonryWall>
-        <DividerLine />
+        </MasonryWall> -->
+        <!-- <DividerLine /> -->
         <div
             v-masonry
             transition-duration=".3s"
@@ -57,16 +65,21 @@ onMounted(async () => {
             gutter="16"
             fit-width="true"
             column-width="230"
+            horizontal-order="true"
         >
-            <CardItem
+            <component
                 v-masonry-tile
                 class="masonry-container__item"
                 v-for="(image) in images"
                 :key="image.id"
+                :is="image.isLoading ? LoadingCard : CardItem"
                 :card="image"
             />
-        </div> -->
-        <button class="load-more"> Load More Images</button>
+        </div>
+        <button
+            class="load-more"
+            @click="getNextPageImages()"
+        > Load More Images</button>
     </div>
 </template>
 
@@ -89,7 +102,7 @@ onMounted(async () => {
   margin: 0 auto;
 
   &__item {
-    max-width: 230px;
+    width: 230px;
   }
 }
 
