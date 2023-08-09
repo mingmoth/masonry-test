@@ -1,26 +1,32 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import getImages, { sleep } from './api';
-// import useMasonry from './hook/masonry';
+import useMasonry from './hook/masonry';
 
-// import DividerLine from './components/DividerLine.vue';
-// import LayoutMasonry from './components/LayoutMasonry.vue';
+import DividerLine from './components/DividerLine.vue';
+import MasonryColumn from './components/MasonryColumn.vue';
 import CardItem from './components/CardItem.vue';
 import LoadingCard from './components/LoadingCard.vue';
 
 const images = ref([]);
+const resortedImages = ref([]);
 const isLoading = ref(true);
-// const imagesSet = ref([]);
 const currentPage = ref(3);
 
-// const { columnCounts, getSortArray } = useMasonry();
+const { columnCounts, getSortArray } = useMasonry();
 
 async function getNextPageImages () {
     currentPage.value += 1;
     const fetchImages = await getImages(currentPage.value);
+
     images.value.push(...fetchImages);
+    resortedImages.value.push(...fetchImages);
+
     await sleep(2000);
+
     images.value.splice(images.value.length - fetchImages.length, 10);
+    resortedImages.value.splice(resortedImages.value.length - fetchImages.length, 10);
+
     const sortedImages = fetchImages.map(image => {
         return {
             ...image,
@@ -28,6 +34,7 @@ async function getNextPageImages () {
         };
     });
     images.value.push(...sortedImages);
+    resortedImages.value = getSortArray(images.value, columnCounts.value);
 }
 
 onMounted(async () => {
@@ -40,14 +47,14 @@ onMounted(async () => {
 <template>
     <div>
         <h1>App</h1>
-        <!-- <LayoutMasonry>
+        <MasonryColumn>
             <component
-                v-for="image in images"
+                v-for="image in resortedImages"
                 :key="image.id"
                 :is="image.isLoading ? LoadingCard : CardItem"
                 :card="image"
             />
-        </LayoutMasonry> -->
+        </MasonryColumn>
         <!-- <DividerLine />
         <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
             <template #default="{ item }">
@@ -56,10 +63,10 @@ onMounted(async () => {
                 />
             </template>
         </MasonryWall> -->
-        <!-- <DividerLine /> -->
+        <DividerLine />
         <div
             v-masonry
-            transition-duration=".3s"
+            transition-duration="0"
             item-selector=".masonry-container__item"
             class="masonry-container"
             gutter="16"
