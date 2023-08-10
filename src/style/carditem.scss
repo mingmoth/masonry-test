@@ -9,6 +9,7 @@
     display: flex;
     flex-flow: column;
     gap: 6px;
+    position: relative;
 
     &-image {
         border-radius: 8px 8px 0 0;
@@ -21,6 +22,14 @@
         flex-flow: column;
         gap: 6px;
         padding: 0 6px 6px;
+        text-align: start;
+    }
+
+    &-desc {
+        position: absolute;
+        bottom: 3%;
+        left: 5%;
+        color: white;
         text-align: start;
     }
 
