@@ -11,7 +11,8 @@ export default async function getImages (page = 3) {
         return response.data.map((image) => {
             return {
                 ...image,
-                isLoading: true
+                isLoading: true,
+                cardtype: Math.random() < 0.4 ? 'item' : 'pure'
             };
         });
     } catch (error) {
