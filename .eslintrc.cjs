@@ -38,6 +38,6 @@ module.exports = {
             'error',
             'always'
         ],
-        "eol-last": 0
+        'eol-last': 0
     }
 };
