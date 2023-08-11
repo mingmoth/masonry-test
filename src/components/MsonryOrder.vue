@@ -16,51 +16,53 @@ const props = defineProps({
 
 const columnCount = computed(() => props.columnCount);
 
-const masonryColumns = computed(() => {
-    const column = new Array(props.columnCount).map(() => ({}));
-    for (let i = 0; i < column.length; i++) {
-        column[i] = {
-            cells: [],
-            outerHeight: 0
-        };
-    }
-    return column;
-});
+// const masonryColumns = computed(() => {
+//     const column = new Array(props.columnCount).map(() => ({}));
+//     for (let i = 0; i < column.length; i++) {
+//         column[i] = {
+//             cells: [],
+//             outerHeight: 0
+//         };
+//     }
+//     return column;
+// });
 
 const masonryRoot = ref(null);
 const masonryCell = ref(null);
 const masonryHeight = ref('auto');
 
 function redraw () {
-    console.log('redraw');
-    const cells = masonryCell.value?.map(el => {
-        const { marginTop, marginBottom, offsetWidth } = getComputedStyle(el);
-        el.maxWidth = offsetWidth;
+    const cells = masonryCell.value.map(el => {
+        const { marginTop, marginBottom } = getComputedStyle(el);
         const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
         return { el, outerHeight };
     });
+    console.log('cells', cells);
 
-    for (const cell of cells) {
-        const columnItem = masonryColumns.value.reduce((prev, curr) => curr.outerHeight < prev.outerHeight ? curr : prev);
-        columnItem.cells.push(cell);
-        columnItem.outerHeight += cell.outerHeight;
-    }
+    const heigthCollect = getSortArray(cells, columnCount.value);
+    console.log('heigthCollect', heigthCollect);
 
-    const maxTarget = masonryColumns.value.reduce((prev, curr) => curr.outerHeight < prev.outerHeight ? prev : curr);
-    masonryHeight.value = maxTarget.outerHeight + 1 + 'px';
+    masonryHeight.value = Math.max(...heigthCollect);
+    console.log('masonryHeight', masonryHeight.value);
+}
 
-    let order = 0;
-    for (const column of masonryColumns.value) {
-        for (const cell of column.cells) {
-            cell.el.style.order = order++;
+function getSortArray (array, columns = columnCount.value) {
+    const cols = columns;
+    let col = 0;
+    const result = Array.from({ length: columns }, () => 0);
+    console.log('result', result);
+    while (col < cols) {
+        for (let i = 0; i < array.length; i += cols) {
+            const _val = array[i + col];
+            if (_val !== undefined) {
+                result[col] += 0;
+                _val.isLoading = false;
+                result[col] += _val.outerHeight;
+            }
         }
-        column.cells[column.cells.length - 1].el.style.flexBasis =
-            column.cells[column.cells.length - 1].el.offsetHeight +
-            maxTarget.outerHeight -
-            column.outerHeight -
-            1 +
-            'px';
+        col++;
     }
+    return result;
 }
 
 onMounted(async () => {
@@ -86,7 +88,8 @@ watch(
         ref="masonryRoot"
         class="masonry-root"
         :style="{
-            maxHeight: masonryHeight
+            '--max-height': `${masonryHeight}px`,
+            '--column-count': columnCount
         }"
     >
         <div
@@ -94,9 +97,6 @@ watch(
             :key="item.id"
             ref="masonryCell"
             class="masonry-cell"
-            :style="{
-                '--column-count': columnCount
-            }"
         >
             <slot
                 :item="item"
@@ -113,11 +113,12 @@ watch(
     flex-direction: column;
     flex-wrap: wrap;
     gap: 12px;
+    max-height: var(--max-height);
 
     .masonry-cell {
         flex: 1;
         flex-basis: 0;
-        max-width: calc((100% - 12px) / var(--column-count));
+        max-width: calc((100% - (12px * (var(--column-count) - 1))) / var(--column-count));
     }
 }
 </style>

@@ -8,11 +8,12 @@ import useMasonry from './hook/masonry';
 
 // masonry
 // import MasonryColumn from './components/MasonryColumn.vue';
-import MasonryRoot from './components/MasonryRoot.vue';
+// import MasonryRoot from './components/MasonryRoot.vue';
+import MasonryOrder from './components/MsonryOrder.vue';
 
 // card
 import CardItem from './components/CardItem.vue';
-import CardPure from './components/CardPure.vue';
+// import CardPure from './components/CardPure.vue';
 // import LoadingCard from './components/LoadingCard.vue';
 
 const images = ref([]);
@@ -60,7 +61,18 @@ onMounted(async () => {
 <template>
     <div>
         <h1>App</h1>
-        <MasonryRoot
+        <MasonryOrder
+            v-if="!isLoading"
+            :items="images"
+            :column-count="2"
+        >
+            <template #default="{ item }">
+                <CardItem
+                    :card="item"
+                />
+            </template>
+        </MasonryOrder>
+        <!-- <MasonryRoot
             v-if="!isLoading"
             :images="images"
             :columnCount="3"
@@ -76,7 +88,7 @@ onMounted(async () => {
                     class="masonry-cell"
                 />
             </div>
-        </MasonryRoot>
+        </MasonryRoot> -->
         <!-- <MasonryColumn>
             <component
                 v-for="image in resortedImages"
