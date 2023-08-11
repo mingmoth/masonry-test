@@ -63,6 +63,7 @@ onMounted(async () => {
         <MasonryRoot
             v-if="!isLoading"
             :images="images"
+            :columnCount="3"
         >
             <div
                 v-for="(image) in images"

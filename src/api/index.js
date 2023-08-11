@@ -12,7 +12,7 @@ export default async function getImages (page = 3) {
             return {
                 ...image,
                 isLoading: true,
-                cardtype: Math.random() < 0.4 ? 'item' : 'pure'
+                cardtype: Math.random() < 0.5 ? 'item' : 'pure'
             };
         });
     } catch (error) {

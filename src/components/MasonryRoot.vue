@@ -1,12 +1,20 @@
 <script setup>
-import { onBeforeUnmount, onMounted, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import imagesLoaded from 'imagesloaded';
 
 const props = defineProps({
     images: {
         type: Array,
         default: () => ([])
+    },
+    columnCount: {
+        type: Number,
+        default: 0
     }
+});
+
+const columnCount = computed(() => {
+    return props.columnCount > 0 ? props.columnCount : 'auto-fill';
 });
 
 function resizeGridItem (item) {
@@ -52,7 +60,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="masonry-root">
+    <div
+        class="masonry-root"
+        :style="{
+            '--column-count': columnCount
+        }"
+    >
         <slot></slot>
     </div>
 </template>
@@ -60,8 +73,9 @@ onBeforeUnmount(() => {
 <style lang="scss">
 .masonry-root {
     display: grid;
-    grid-gap: 12px;
-    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-    grid-auto-rows: 4px;
+    row-gap: 8px;
+    column-gap: 16px;
+    grid-template-columns: repeat(var(--column-count), minmax(145px, 1fr));
+    grid-auto-rows: 1px;
 }
 </style>
