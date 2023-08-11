@@ -32,12 +32,19 @@ export default {
         columnCount: {
             type: Number,
             default: 1
+        },
+        gap: {
+            type: Number,
+            default: 12
         }
     },
     watch: {
         items: {
             async handler () {
-                this.redraw();
+                console.log('wwatch', this.items);
+                if (this.items.length > 0) {
+                    this.redraw();
+                }
                 // const cells = this.$refs.cell?.map(el => {
                 //     const { marginTop, marginBottom } = getComputedStyle(el);
                 //     const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
@@ -45,8 +52,7 @@ export default {
                 // });
                 // this.masonryHeight = Math.max(...this.getSortArray(cells));
             },
-            deep: true,
-            immediate: true
+            deep: true
         }
     },
     data () {
@@ -60,6 +66,7 @@ export default {
     },
     async mounted () {
         // this.redraw();
+        console.log('mounted');
         await sleep(2000);
         await this.redraw();
         const cells = this.$refs.cell?.map(el => {
@@ -106,21 +113,26 @@ export default {
             let col = 0;
             const result = Array.from({ length: columns }, () => 0);
             console.log('result', result);
+            let order = 0;
             while (col < cols) {
-                for (let i = 0; i < array.length; i += cols) {
+                for (let i = 0; i <= array.length; i += cols) {
                     const _val = array[i + col];
                     if (_val !== undefined) {
-                        result[col] += 0;
-                        result[col] += _val.outerHeight;
+                        // Z 字排
+                        _val.el.style.order = order++;
+                        console.log(`_val.outerHeight ${col}`, _val.outerHeight);
+                        result[col] += _val.outerHeight + this.gap;
                     }
                 }
                 col++;
             }
+            console.log('result', result);
             return result;
         }
     }
 };
 </script>
+
 <style lang="scss" scoped>
 .masonry-root {
     display: flex;
