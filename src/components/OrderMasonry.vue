@@ -4,7 +4,8 @@
         class="masonry-root"
         :style="{
             '--max-height': `${masonryHeight}px`,
-            '--column-count': columnCount
+            '--column-count': columnCount,
+            '--gap': `${gap}px`
         }"
     >
         <div
@@ -22,6 +23,12 @@
 
 <script>
 import { sleep } from '../api';
+
+const MASONRY_PATTERN = {
+    M: 'm',
+    Z: 'z'
+};
+
 export default {
     name: 'OrderMasonry',
     props: {
@@ -36,21 +43,20 @@ export default {
         gap: {
             type: Number,
             default: 12
+        },
+        pattern: {
+            type: String,
+            default: 'm',
+            validator: (val) => Object.values(MASONRY_PATTERN).includes(val)
         }
     },
     watch: {
         items: {
             async handler () {
-                console.log('wwatch', this.items);
+                console.log('watch');
                 if (this.items.length > 0) {
                     this.redraw();
                 }
-                // const cells = this.$refs.cell?.map(el => {
-                //     const { marginTop, marginBottom } = getComputedStyle(el);
-                //     const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
-                //     return { el, outerHeight };
-                // });
-                // this.masonryHeight = Math.max(...this.getSortArray(cells));
             },
             deep: true
         }
@@ -65,16 +71,8 @@ export default {
         };
     },
     async mounted () {
-        // this.redraw();
-        console.log('mounted');
         await sleep(2000);
         await this.redraw();
-        const cells = this.$refs.cell?.map(el => {
-            const { marginTop, marginBottom } = getComputedStyle(el);
-            const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
-            return { el, outerHeight };
-        });
-        this.masonryHeight = Math.max(...this.getSortArray(cells));
     },
     methods: {
         async redraw () {
@@ -83,36 +81,39 @@ export default {
                 const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
                 return { el, outerHeight };
             });
-            console.log('cells', cells);
-            // for (const cell of cells) {
-            //     const columnItem = this.columns.reduce((prev, curr) => curr.outerHeight < prev.outerHeight ? curr : prev);
-            //     columnItem.cells.push(cell);
-            //     columnItem.outerHeight += cell.outerHeight;
-            // }
-
-            // const maxTarget = this.columns.reduce((prev, curr) => curr.outerHeight < prev.outerHeight ? prev : curr);
-
-            this.masonryHeight = Math.max(...this.getSortArray(cells));
-            // let order = 0;
-            // for (const column of this.columns) {
-            //     // let count = 0 + order;
-            //     for (const cell of column.cells) {
-            //         cell.el.style.order = order++;
-            //         // cell.el.style.order = cell.el.style.order + order;
-            //     }
-            //     column.cells[column.cells.length - 1].el.style.flexBasis =
-            //         column.cells[column.cells.length - 1].el.offsetHeight +
-            //         this.masonryHeight -
-            //         column.outerHeight +
-            //         1 + 'px';
-            //     console.log('next--------------');
-            // }
+            if (this.pattern === 'z') {
+                this.masonryHeight = Math.max(...this.placeZPatternOrder(cells));
+            } else {
+                this.masonryHeight = Math.max(...this.placeMasonryOrder(cells));
+            }
         },
-        getSortArray (array, columns = this.columnCount) {
+        placeMasonryOrder (cells) {
+            this.columns = Array.from({ length: this.columnCount }).map(() => ({
+                cells: [],
+                outerHeight: 0
+            }));
+            for (const cell of cells) {
+                const columnItem = this.columns.reduce((prev, curr) => {
+                    console.log('prev', prev);
+                    console.log('curr', curr);
+                    return curr.outerHeight < prev.outerHeight ? curr : prev;
+                });
+                columnItem.cells.push(cell);
+                columnItem.outerHeight += cell.outerHeight + this.gap;
+            }
+            let order = 0;
+            for (const column of this.columns) {
+                for (const cell of column.cells) {
+                    cell.el.style.order = order++;
+                }
+                console.log('next--------------');
+            }
+            return this.columns.map(column => column.outerHeight);
+        },
+        placeZPatternOrder (array, columns = this.columnCount) {
             const cols = columns;
             let col = 0;
             const result = Array.from({ length: columns }, () => 0);
-            console.log('result', result);
             let order = 0;
             while (col < cols) {
                 for (let i = 0; i <= array.length; i += cols) {
@@ -120,13 +121,11 @@ export default {
                     if (_val !== undefined) {
                         // Z 字排
                         _val.el.style.order = order++;
-                        console.log(`_val.outerHeight ${col}`, _val.outerHeight);
                         result[col] += _val.outerHeight + this.gap;
                     }
                 }
                 col++;
             }
-            console.log('result', result);
             return result;
         }
     }
@@ -138,7 +137,7 @@ export default {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--gap);
     max-height: var(--max-height);
 }
 .masonry-cell {

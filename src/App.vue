@@ -65,7 +65,8 @@ onMounted(async () => {
         <OrderMasonry
             v-if="!isLoading"
             :items="images"
-            :column-count="2"
+            :column-count="3"
+            pattern="m"
         >
             <template #default="{ item }">
                 <CardItem
