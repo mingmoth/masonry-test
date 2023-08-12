@@ -1,63 +1,94 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { sleep } from '../api';
+
+// const MASONRY_PATTERN = {
+//     M: 'm',
+//     Z: 'z'
+// };
+
 const props = defineProps({
     items: {
         type: Array,
         default: () => ([])
     },
     columnCount: {
-        item: {
-            type: Number,
-            default: 1
-        }
+        type: Number,
+        default: 1
+    },
+    gap: {
+        type: Number,
+        default: 12
+    },
+    pattern: {
+        type: String,
+        default: 'm',
+        validator: (val) => ['m', 'z'].includes(val)
     }
 });
 
 const columnCount = computed(() => props.columnCount);
 
-// const masonryColumns = computed(() => {
-//     const column = new Array(props.columnCount).map(() => ({}));
-//     for (let i = 0; i < column.length; i++) {
-//         column[i] = {
-//             cells: [],
-//             outerHeight: 0
-//         };
-//     }
-//     return column;
-// });
-
+// DOM refs
 const masonryRoot = ref(null);
 const masonryCell = ref(null);
+
+// ref variables
+const columns = ref([]);
+
 const masonryHeight = ref('auto');
 
-function redraw () {
+async function displayMasonryItems () {
     const cells = masonryCell.value.map(el => {
         const { marginTop, marginBottom } = getComputedStyle(el);
         const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
         return { el, outerHeight };
     });
-    console.log('cells', cells);
-
-    const heigthCollect = getSortArray(cells, columnCount.value);
-    console.log('heigthCollect', heigthCollect);
-
-    masonryHeight.value = Math.max(...heigthCollect);
-    console.log('masonryHeight', masonryHeight.value);
+    if (!cells) {
+        return;
+    }
+    if (props.pattern === 'z') {
+        masonryHeight.value = Math.max(...placeZPatternOrder(cells));
+    } else {
+        masonryHeight.value = Math.max(...placeMasonryOrder(cells));
+    }
 }
 
-function getSortArray (array, columns = columnCount.value) {
+function placeMasonryOrder (array) {
+    columns.value = Array.from({ length: columnCount.value }).map(item => {
+        return {
+            cells: [],
+            outerHeight: 0
+        };
+    });
+    for (const cell of array) {
+        const columnItem = columns.value.reduce((prev, curr) => {
+            return curr.outerHeight < prev.outerHeight ? curr : prev;
+        });
+        columnItem.cells.push(cell);
+        columnItem.outerHeight += cell.outerHeight + props.gap;
+    }
+    let order = 0;
+    for (const column of columns.value) {
+        for (const cell of column.cells) {
+            cell.el.style.order = order++;
+        }
+    }
+    return columns.value.map(column => column.outerHeight);
+}
+
+function placeZPatternOrder (array, columns = columnCount.value) {
     const cols = columns;
     let col = 0;
     const result = Array.from({ length: columns }, () => 0);
-    console.log('result', result);
+    let order = 0;
     while (col < cols) {
         for (let i = 0; i < array.length; i += cols) {
             const _val = array[i + col];
             if (_val !== undefined) {
-                result[col] += 0;
-                _val.isLoading = false;
-                result[col] += _val.outerHeight;
+                // Z 字排
+                _val.el.style.order = order++;
+                result[col] += _val.outerHeight + props.gap;
             }
         }
         col++;
@@ -66,17 +97,20 @@ function getSortArray (array, columns = columnCount.value) {
 }
 
 onMounted(async () => {
-    redraw();
     await sleep(2000);
-    redraw();
+    displayMasonryItems();
+    window.addEventListener('resize', displayMasonryItems);
+});
+
+onBeforeUnmount(async () => {
+    window.removeEventListener('resize', displayMasonryItems);
 });
 
 watch(
     () => props.items,
     async () => {
-        redraw();
-        await sleep(1000);
-        redraw();
+        await sleep(2000);
+        await displayMasonryItems();
     },
     { deep: true }
 );
@@ -89,20 +123,19 @@ watch(
         class="masonry-root"
         :style="{
             '--max-height': `${masonryHeight}px`,
-            '--column-count': columnCount
+            '--column-count': columnCount,
+            '--gap': `${gap}px`
         }"
     >
         <div
-            v-for="item in props.items"
-            :key="item.id"
+            v-for="item in items"
+            :key="item.order"
             ref="masonryCell"
             class="masonry-cell"
         >
-            <slot
-                :item="item"
-                class="masonry-item"
-            >
-            </slot>
+            <div class="masonry-item">
+                <slot :item="item"></slot>
+            </div>
         </div>
     </div>
 </template>
@@ -112,8 +145,9 @@ watch(
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--gap);
     max-height: var(--max-height);
+    overflow-x: hidden;
 
     .masonry-cell {
         flex: 1;
