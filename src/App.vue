@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import getImages, { sleep } from './api';
-import useMasonry from './hook/masonry';
+import getImages from './api';
+// import useMasonry from './hook/masonry';
 
 // common
 // import DividerLine from './components/DividerLine.vue';
@@ -18,44 +18,38 @@ import CardPure from './components/CardPure.vue';
 // import LoadingCard from './components/LoadingCard.vue';
 
 const images = ref([]);
-const resortedImages = ref([]);
+// const resortedImages = ref([]);
 const isLoading = ref(true);
 const currentPage = ref(3);
 
-const { columnCounts, getSortArray } = useMasonry();
+// const { columnCounts, getSortArray } = useMasonry();
 
 async function getNextPageImages () {
     currentPage.value += 1;
     const fetchImages = await getImages(currentPage.value);
 
     images.value.push(...fetchImages);
-    resortedImages.value.push(...fetchImages);
+    // resortedImages.value.push(...fetchImages);
 
-    await sleep(2000);
+    // await sleep(2000);
 
-    images.value.splice(images.value.length - fetchImages.length, 10);
-    resortedImages.value.splice(resortedImages.value.length - fetchImages.length, 10);
+    // images.value.splice(images.value.length - fetchImages.length, 10);
+    // resortedImages.value.splice(resortedImages.value.length - fetchImages.length, 10);
 
-    const sortedImages = fetchImages.map(image => {
-        return {
-            ...image,
-            isLoading: false
-        };
-    });
-    images.value.push(...sortedImages);
-    resortedImages.value = getSortArray(images.value, columnCounts.value);
+    // const sortedImages = fetchImages.map(image => {
+    //     return {
+    //         ...image,
+    //         isLoading: false
+    //     };
+    // });
+    // images.value.push(...sortedImages);
+    // resortedImages.value = getSortArray(images.value, columnCounts.value);
 }
 
 onMounted(async () => {
     await getNextPageImages();
     isLoading.value = false;
-    // onLoad();
-    // window.addEventListener('resize', onResize);
 });
-
-// onBeforeUnmount(() => {
-//     window.removeEventListener('resize', onResize);
-// });
 
 </script>
 
@@ -65,7 +59,7 @@ onMounted(async () => {
         <OrderMasonry
             v-if="!isLoading"
             :items="images"
-            :column-count="3"
+            :column-count="2"
             pattern="m"
         >
             <template #default="{ item }">

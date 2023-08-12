@@ -55,13 +55,12 @@ export default {
         items: {
             async handler () {
                 console.log('watch');
-                if (this.items.length > 0) {
-                    window.scrollTo({
-                        top: this.masonryHeight + 1000,
-                        behavior: 'smooth'
-                    });
-                    await this.redraw();
-                }
+                window.scrollTo({
+                    top: this.masonryHeight,
+                    behavior: 'smooth'
+                });
+                await sleep(2000);
+                this.redraw();
             },
             deep: true
         }
