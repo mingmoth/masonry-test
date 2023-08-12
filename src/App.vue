@@ -9,8 +9,8 @@ import getImages from './api';
 // masonry
 // import MasonryColumn from './components/MasonryColumn.vue';
 // import MasonryRoot from './components/MasonryRoot.vue';
-// import MasonryOrder from './components/MsonryOrder.vue';
-import OrderMasonry from './components/OrderMasonry.vue';
+import MasonryOrder from './components/MsonryOrder.vue';
+// import OrderMasonry from './components/OrderMasonry.vue';
 
 // card
 import CardItem from './components/CardItem.vue';
@@ -56,7 +56,7 @@ onMounted(async () => {
 <template>
     <div>
         <h1>App</h1>
-        <OrderMasonry
+        <!-- <OrderMasonry
             v-if="!isLoading"
             :items="images"
             :column-count="2"
@@ -68,18 +68,19 @@ onMounted(async () => {
                     :card="item"
                 />
             </template>
-        </OrderMasonry>
-        <!-- <MasonryOrder
+        </OrderMasonry> -->
+        <MasonryOrder
             v-if="!isLoading"
             :items="images"
             :column-count="2"
         >
             <template #default="{ item }">
-                <CardItem
+                <component
+                    :is="item.cardtype === 'item' ? CardItem : CardPure"
                     :card="item"
                 />
             </template>
-        </MasonryOrder> -->
+        </MasonryOrder>
         <!-- <MasonryRoot
             v-if="!isLoading"
             :images="images"
