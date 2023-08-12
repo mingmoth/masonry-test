@@ -23,6 +23,7 @@
 
 <script>
 import { sleep } from '../api';
+// import { kkLockBodyScroll, kkUnlockBodyScroll } from '../hook/bodyScrollControl';
 
 const MASONRY_PATTERN = {
     M: 'm',
@@ -55,7 +56,11 @@ export default {
             async handler () {
                 console.log('watch');
                 if (this.items.length > 0) {
-                    this.redraw();
+                    window.scrollTo({
+                        top: this.masonryHeight + 1000,
+                        behavior: 'smooth'
+                    });
+                    await this.redraw();
                 }
             },
             deep: true
@@ -72,15 +77,22 @@ export default {
     },
     async mounted () {
         await sleep(2000);
-        await this.redraw();
+        this.redraw();
+        window.addEventListener('resize', this.redraw);
+    },
+    beforeUnmount () {
+        window.removeEventListener('resize', this.redraw);
     },
     methods: {
         async redraw () {
-            const cells = this.$refs.cell?.map(el => {
+            const cells = this.$refs?.cell?.map(el => {
                 const { marginTop, marginBottom } = getComputedStyle(el);
                 const outerHeight = parseInt(marginTop) + el.offsetHeight + parseInt(marginBottom);
                 return { el, outerHeight };
             });
+            if (!cells) {
+                return;
+            }
             if (this.pattern === 'z') {
                 this.masonryHeight = Math.max(...this.placeZPatternOrder(cells));
             } else {
@@ -94,8 +106,6 @@ export default {
             }));
             for (const cell of cells) {
                 const columnItem = this.columns.reduce((prev, curr) => {
-                    console.log('prev', prev);
-                    console.log('curr', curr);
                     return curr.outerHeight < prev.outerHeight ? curr : prev;
                 });
                 columnItem.cells.push(cell);
@@ -106,7 +116,6 @@ export default {
                 for (const cell of column.cells) {
                     cell.el.style.order = order++;
                 }
-                console.log('next--------------');
             }
             return this.columns.map(column => column.outerHeight);
         },
@@ -139,6 +148,19 @@ export default {
     flex-wrap: wrap;
     gap: var(--gap);
     max-height: var(--max-height);
+}
+.masonry-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    opacity: 0.9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
 }
 .masonry-cell {
     flex: 1;

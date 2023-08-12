@@ -23,3 +23,15 @@ export default async function getImages (page = 3) {
 export function sleep (delay) {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
+
+export function debounce (fn, delay) {
+    console.log('debounce');
+    let timeout;
+    return function (...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            fn.apply(context, args);
+        }, delay);
+    };
+}

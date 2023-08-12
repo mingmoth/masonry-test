@@ -14,7 +14,7 @@ import OrderMasonry from './components/OrderMasonry.vue';
 
 // card
 import CardItem from './components/CardItem.vue';
-// import CardPure from './components/CardPure.vue';
+import CardPure from './components/CardPure.vue';
 // import LoadingCard from './components/LoadingCard.vue';
 
 const images = ref([]);
@@ -69,7 +69,8 @@ onMounted(async () => {
             pattern="m"
         >
             <template #default="{ item }">
-                <CardItem
+                <component
+                    :is="item.cardtype === 'item' ? CardItem : CardPure"
                     :card="item"
                 />
             </template>
