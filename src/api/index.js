@@ -8,7 +8,13 @@ export default async function getImages (page = 3) {
         if (response.status !== 200 || !Array.isArray(response.data)) {
             throw new Error('Can not fetch images');
         }
-        return response.data;
+        return response.data.map((image) => {
+            return {
+                ...image,
+                isLoading: true,
+                cardtype: Math.random() < 0.5 ? 'item' : 'pure'
+            };
+        });
     } catch (error) {
         console.error(error);
     }
@@ -16,4 +22,16 @@ export default async function getImages (page = 3) {
 
 export function sleep (delay) {
     return new Promise(resolve => setTimeout(resolve, delay));
+}
+
+export function debounce (fn, delay) {
+    console.log('debounce');
+    let timeout;
+    return function (...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            fn.apply(context, args);
+        }, delay);
+    };
 }
