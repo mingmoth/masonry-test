@@ -1,12 +1,14 @@
-<script setup>
+<script>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { sleep } from '../api';
 
-// const MASONRY_PATTERN = {
-//     M: 'm',
-//     Z: 'z'
-// };
+const MASONRY_PATTERN = {
+    M: 'm',
+    Z: 'z'
+};
+</script>
 
+<script setup>
 const props = defineProps({
     items: {
         type: Array,
@@ -23,7 +25,7 @@ const props = defineProps({
     pattern: {
         type: String,
         default: 'm',
-        validator: (val) => ['m', 'z'].includes(val)
+        validator: (val) => Object.values(MASONRY_PATTERN).includes(val)
     }
 });
 
@@ -113,6 +115,22 @@ watch(
         await displayMasonryItems();
     },
     { deep: true }
+);
+
+watch(
+    () => props.columnCount,
+    async () => {
+        await sleep(2000);
+        await displayMasonryItems();
+    }
+);
+
+watch(
+    () => props.pattern,
+    async () => {
+        await sleep(2000);
+        await displayMasonryItems();
+    }
 );
 
 </script>
