@@ -19,7 +19,7 @@ const props = defineProps({
         default: 1
     },
     gap: {
-        type: Number,
+        type: [Number, String],
         default: 12
     },
     pattern: {
@@ -35,11 +35,11 @@ const columnCount = computed(() => props.columnCount);
 const masonryRoot = ref(null);
 const masonryCell = ref(null);
 
-// ref variables
+// Data
 const columns = ref([]);
-
 const masonryHeight = ref('auto');
 
+// Functions
 async function displayMasonryItems () {
     const cells = masonryCell.value.map(el => {
         const { marginTop, marginBottom } = getComputedStyle(el);
@@ -49,13 +49,14 @@ async function displayMasonryItems () {
     if (!cells) {
         return;
     }
-    if (props.pattern === 'z') {
+    if (props.pattern === MASONRY_PATTERN.Z) {
         masonryHeight.value = Math.max(...placeZPatternOrder(cells));
     } else {
         masonryHeight.value = Math.max(...placeMasonryOrder(cells));
     }
 }
 
+// 瀑布流：排進較短的 column
 function placeMasonryOrder (array) {
     columns.value = Array.from({ length: columnCount.value }).map(item => {
         return {
@@ -64,38 +65,55 @@ function placeMasonryOrder (array) {
         };
     });
     for (const cell of array) {
+        // 排進較短的 column
         const columnItem = columns.value.reduce((prev, curr) => {
             return curr.outerHeight < prev.outerHeight ? curr : prev;
         });
         columnItem.cells.push(cell);
-        columnItem.outerHeight += cell.outerHeight + props.gap;
+        columnItem.outerHeight += cell.outerHeight + Number(props.gap);
     }
+    let order = 0;
+    // 調整真實 DOM 的 flex order
+    for (const column of columns.value) {
+        for (const cell of column.cells) {
+            cell.el.style.order = order++;
+        }
+    }
+    // 得出各排高度 array
+    return columns.value.map(column => column.outerHeight);
+}
+
+// Z 字排
+function placeZPatternOrder (array, cols = columnCount.value) {
+    columns.value = Array.from({ length: columnCount.value }).map(item => {
+        return {
+            cells: [],
+            outerHeight: 0
+        };
+    });
+
+    let col = 0;
+    // Z 字排
+    while (col < cols) {
+        for (let i = 0; i < array.length; i += cols) {
+            const cell = array[i + col];
+            if (cell !== undefined) {
+                columns.value[col].cells.push(cell);
+                columns.value[col].outerHeight += cell.outerHeight + Number(props.gap);
+            }
+        }
+        col++;
+    }
+
+    // 調整真實 DOM 的 flex order
     let order = 0;
     for (const column of columns.value) {
         for (const cell of column.cells) {
             cell.el.style.order = order++;
         }
     }
+    // 得出各排高度 array
     return columns.value.map(column => column.outerHeight);
-}
-
-function placeZPatternOrder (array, columns = columnCount.value) {
-    const cols = columns;
-    let col = 0;
-    const result = Array.from({ length: columns }, () => 0);
-    let order = 0;
-    while (col < cols) {
-        for (let i = 0; i < array.length; i += cols) {
-            const _val = array[i + col];
-            if (_val !== undefined) {
-                // Z 字排
-                _val.el.style.order = order++;
-                result[col] += _val.outerHeight + props.gap;
-            }
-        }
-        col++;
-    }
-    return result;
 }
 
 onMounted(async () => {
@@ -109,30 +127,13 @@ onBeforeUnmount(async () => {
 });
 
 watch(
-    () => props.items,
+    [() => props.items, () => props.columnCount, () => props.pattern, () => props.gap],
     async () => {
         await sleep(2000);
         await displayMasonryItems();
     },
     { deep: true }
 );
-
-watch(
-    () => props.columnCount,
-    async () => {
-        await sleep(2000);
-        await displayMasonryItems();
-    }
-);
-
-watch(
-    () => props.pattern,
-    async () => {
-        await sleep(2000);
-        await displayMasonryItems();
-    }
-);
-
 </script>
 
 <template>
@@ -170,7 +171,7 @@ watch(
     .masonry-cell {
         flex: 1;
         flex-basis: 0;
-        max-width: calc((100% - (12px * (var(--column-count) - 1))) / var(--column-count));
+        max-width: calc((100% - (var(--gap) * (var(--column-count) - 1))) / var(--column-count));
     }
 }
 </style>
