@@ -17,6 +17,21 @@ import CardItem from './components/CardItem.vue';
 import CardPure from './components/CardPure.vue';
 // import LoadingCard from './components/LoadingCard.vue';
 
+const columnOptions = [1, 2, 3, 4, 5];
+const masonryPatterns = [
+    {
+        value: 'm',
+        text: 'Masonry'
+    },
+    {
+        value: 'z',
+        text: 'Z-Pattern'
+    }
+];
+
+const columnOption = ref(2);
+const masonryPattern = ref('m');
+
 const images = ref([]);
 // const resortedImages = ref([]);
 const isLoading = ref(true);
@@ -54,7 +69,31 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
+    <div class="app">
+        <div class="select">
+            <label for="columns">
+                Choose Column Number
+                <select name="columns" id="columns" v-model="columnOption">
+                    <option
+                        v-for="option in columnOptions"
+                        :key="option"
+                        :value="option"
+                    >{{ option }}</option>
+                </select>
+            </label>
+            <label for="patten">
+                Choose Masonry Pattern
+                <select name="patten" id="patten" v-model="masonryPattern">
+                    <option
+                        v-for="pattern in masonryPatterns"
+                        :key="pattern.value"
+                        :value="pattern.value"
+                    >
+                        {{ pattern.text }}
+                    </option>
+                </select>
+            </label>
+        </div>
         <h1>App</h1>
         <!-- <OrderMasonry
             v-if="!isLoading"
@@ -72,7 +111,8 @@ onMounted(async () => {
         <MasonryOrder
             v-if="!isLoading"
             :items="images"
-            :column-count="2"
+            :column-count="columnOption"
+            :pattern="masonryPattern"
         >
             <template #default="{ item }">
                 <component
@@ -166,7 +206,22 @@ onMounted(async () => {
 
 .load-more {
   position: fixed;
-  top: 5%;
+  bottom: 5%;
   right: 3%;
+}
+
+.select {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    padding: 12px;
+    z-index: 2;
+    background: white;
+
+    label {
+        display: block;
+        text-align: start;
+    }
 }
 </style>

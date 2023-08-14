@@ -115,6 +115,22 @@ watch(
     { deep: true }
 );
 
+watch(
+    () => props.columnCount,
+    async () => {
+        await sleep(2000);
+        await displayMasonryItems();
+    }
+);
+
+watch(
+    () => props.pattern,
+    async () => {
+        await sleep(2000);
+        await displayMasonryItems();
+    }
+);
+
 </script>
 
 <template>
