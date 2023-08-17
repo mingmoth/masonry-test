@@ -10,6 +10,10 @@ const props = defineProps({
     columnCount: {
         type: Number,
         default: 0
+    },
+    gap: {
+        type: [Number, String],
+        default: 12
     }
 });
 
@@ -21,14 +25,14 @@ function resizeGridItem (item) {
     const grid = document.getElementsByClassName('masonry-root')[0];
     const rowHeight = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-auto-rows'));
     const rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-row-gap'));
-    const rowSpan = Math.ceil((item.querySelector('.masonry-cell').getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
+    const rowSpan = Math.round((item.querySelector('.masonry-cell').getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
     item.style.gridRowEnd = 'span ' + rowSpan;
 }
 
 function resizeAllGridItems () {
     const allItems = document.getElementsByClassName('masonry-item');
     for (let x = 0; x < allItems.length; x++) {
-        resizeGridItem(allItems[x]);
+        imagesLoaded(allItems[x], resizeInstance);
     }
 }
 
@@ -46,9 +50,9 @@ onMounted(() => {
 });
 
 watch(
-    () => props.images,
+    [() => props.images, () => props.columnCount],
     async () => {
-        resizeAllGridItems();
+        setTimeout(() => resizeAllGridItems());
     },
     { deep: true }
 );
@@ -63,7 +67,8 @@ onBeforeUnmount(() => {
     <div
         class="masonry-root"
         :style="{
-            '--column-count': columnCount
+            '--column-count': columnCount,
+            '--gap': `${gap}px`
         }"
     >
         <slot></slot>
@@ -73,8 +78,7 @@ onBeforeUnmount(() => {
 <style lang="scss">
 .masonry-root {
     display: grid;
-    row-gap: 8px;
-    column-gap: 16px;
+    gap: var(--gap);
     grid-template-columns: repeat(var(--column-count), minmax(145px, 1fr));
     grid-auto-rows: 1px;
 }

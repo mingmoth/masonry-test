@@ -124,7 +124,7 @@ onMounted(async () => {
         <!-- <MasonryRoot
             v-if="!isLoading"
             :images="images"
-            :columnCount="3"
+            :columnCount="columnOption"
         >
             <div
                 v-for="(image) in images"
@@ -149,7 +149,8 @@ onMounted(async () => {
         <!-- <DividerLine /> -->
         <!-- <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
             <template #default="{ item }">
-                <CardItem
+                <component
+                    :is="item.cardtype === 'item' ? CardItem : CardPure"
                     :card="item"
                 />
             </template>
