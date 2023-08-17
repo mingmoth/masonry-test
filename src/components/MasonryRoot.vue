@@ -25,7 +25,7 @@ function resizeGridItem (item) {
     const grid = document.getElementsByClassName('masonry-root')[0];
     const rowHeight = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-auto-rows'));
     const rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-row-gap'));
-    const rowSpan = Math.ceil((item.querySelector('.masonry-cell').getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
+    const rowSpan = Math.round((item.querySelector('.masonry-cell').getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
     item.style.gridRowEnd = 'span ' + rowSpan;
 }
 
