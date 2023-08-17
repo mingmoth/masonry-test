@@ -44,21 +44,6 @@ async function getNextPageImages () {
     currentPage.value += 1;
     const fetchImages = await getImages(currentPage.value);
     images.value.push(...fetchImages);
-    // resortedImages.value.push(...fetchImages);
-
-    // await sleep(2000);
-
-    // images.value.splice(images.value.length - fetchImages.length, 10);
-    // resortedImages.value.splice(resortedImages.value.length - fetchImages.length, 10);
-
-    // const sortedImages = fetchImages.map(image => {
-    //     return {
-    //         ...image,
-    //         isLoading: false
-    //     };
-    // });
-    // images.value.push(...sortedImages);
-    // resortedImages.value = getSortArray(images.value, columnCounts.value);
 }
 
 onMounted(async () => {
