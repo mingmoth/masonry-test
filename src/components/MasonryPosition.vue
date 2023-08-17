@@ -82,7 +82,7 @@ async function placeSequenceRow () {
     }
 }
 
-// 瀑布流排列
+// 典型瀑布流排列
 function placeMasonryOrder () {
     const heightMap = columns.value.map(column => column.height);
     const minHeight = Math.min(...Object.values(heightMap));
@@ -115,7 +115,7 @@ function getItemsRef () {
     });
 }
 
-// 排列
+// 瀑布流排列
 async function layoutDisplay () {
     if (columnCount.value < 1) return;
     initColumns();
@@ -143,7 +143,7 @@ async function awaitImagesLoaded () {
     }
 }
 
-// 樣式 props 或 視窗 resize 時重新排列瀑布流
+// 樣式 props 改變 或 視窗 resize 時重新排列
 async function resetDisplay () {
     if (columnCount.value < 1) return;
     columns.value = [];
