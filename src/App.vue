@@ -9,8 +9,9 @@ import getImages from './api';
 // masonry
 // import MasonryColumn from './components/MasonryColumn.vue';
 // import MasonryRoot from './components/MasonryRoot.vue';
-import MasonryOrder from './components/MsonryOrder.vue';
+// import MasonryOrder from './components/MsonryOrder.vue';
 // import OrderMasonry from './components/OrderMasonry.vue';
+import MasonryPosition from './components/MasonryPosition.vue';
 
 // card
 import CardItem from './components/CardItem.vue';
@@ -42,23 +43,7 @@ const currentPage = ref(3);
 async function getNextPageImages () {
     currentPage.value += 1;
     const fetchImages = await getImages(currentPage.value);
-
     images.value.push(...fetchImages);
-    // resortedImages.value.push(...fetchImages);
-
-    // await sleep(2000);
-
-    // images.value.splice(images.value.length - fetchImages.length, 10);
-    // resortedImages.value.splice(resortedImages.value.length - fetchImages.length, 10);
-
-    // const sortedImages = fetchImages.map(image => {
-    //     return {
-    //         ...image,
-    //         isLoading: false
-    //     };
-    // });
-    // images.value.push(...sortedImages);
-    // resortedImages.value = getSortArray(images.value, columnCounts.value);
 }
 
 onMounted(async () => {
@@ -95,6 +80,19 @@ onMounted(async () => {
             </label>
         </div>
         <h1>App</h1>
+        <MasonryPosition
+            v-if="!isLoading"
+            :items="images"
+            :column-count="columnOption"
+            :pattern="masonryPattern"
+        >
+            <template #default="{ item }">
+                <component
+                    :is="item?.cardtype === 'item' ? CardItem : CardPure"
+                    :card="item"
+                />
+            </template>
+        </MasonryPosition>
         <!-- <OrderMasonry
             v-if="!isLoading"
             :items="images"
@@ -108,7 +106,7 @@ onMounted(async () => {
                 />
             </template>
         </OrderMasonry> -->
-        <MasonryOrder
+        <!-- <MasonryOrder
             v-if="!isLoading"
             :items="images"
             :column-count="columnOption"
@@ -120,7 +118,7 @@ onMounted(async () => {
                     :card="item"
                 />
             </template>
-        </MasonryOrder>
+        </MasonryOrder> -->
         <!-- <MasonryRoot
             v-if="!isLoading"
             :images="images"
