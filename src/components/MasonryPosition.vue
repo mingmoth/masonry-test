@@ -9,10 +9,6 @@ const MASONRY_PATTERN = {
 
 <script setup>
 const props = defineProps({
-    items: {
-        type: Array,
-        default: () => ([])
-    },
     columnCount: {
         type: [Number, String],
         default: 1
@@ -20,6 +16,10 @@ const props = defineProps({
     gap: {
         type: [Number, String],
         default: 12
+    },
+    items: {
+        type: Array,
+        default: () => ([])
     },
     pattern: {
         type: String,
@@ -37,13 +37,15 @@ const columns = ref([]);
 const currentItemCount = ref(0);
 
 // Computed
-const itemsCount = computed(() => props.items.length);
-const itemsHeightCollection = ref([]);
-
 const columnCount = computed(() => Number(props.columnCount));
 const gap = computed(() => Number(props.gap));
 
+const itemsCount = computed(() => props.items.length);
+const itemsHeightCollection = ref([]);
+
 // Functions
+
+// 初始化每列物件(內部紀錄 items 總數，及 items + gaps 總高度)
 function initColumns () {
     if (columns.value.length) {
         return;
@@ -56,6 +58,7 @@ function initColumns () {
     });
 }
 
+// 排第一排
 async function placeFirstRow () {
     for (let idx = 0; idx < columnCount.value; idx++) {
         itemsHeightCollection.value[idx].el.style.top = 0;
@@ -67,6 +70,7 @@ async function placeFirstRow () {
     }
 }
 
+// 排後續排數
 async function placeSequenceRow () {
     while (currentItemCount.value < itemsCount.value) {
         if (props.pattern === MASONRY_PATTERN.M) {
@@ -78,6 +82,7 @@ async function placeSequenceRow () {
     }
 }
 
+// 瀑布流排列
 function placeMasonryOrder () {
     const heightMap = columns.value.map(column => column.height);
     const minHeight = Math.min(...Object.values(heightMap));
@@ -86,6 +91,7 @@ function placeMasonryOrder () {
     placeItemPosition(minHeightIndex, leftWidth);
 }
 
+// Ｚ字流排列
 function placeZPatternOrder () {
     const heightMap = columns.value.map(column => column.cells);
     const minCell = Math.min(...Object.values(heightMap));
@@ -94,6 +100,7 @@ function placeZPatternOrder () {
     placeItemPosition(minCellIndex, leftWidth);
 }
 
+// 定義 item 的 position top & left
 function placeItemPosition (index, width) {
     itemsHeightCollection.value[currentItemCount.value].el.style.top = `${columns.value[index].height}px`;
     itemsHeightCollection.value[currentItemCount.value].el.style.left = `${width}px`;
@@ -101,12 +108,14 @@ function placeItemPosition (index, width) {
     columns.value[index].height += itemsHeightCollection.value[currentItemCount.value].el.offsetHeight + gap.value;
 }
 
+// 取得瀑布流 DOM 的 refs
 function getItemsRef () {
     return masonryCell.value.map(el => {
         return { el };
     });
 }
 
+// 排列
 async function layoutDisplay () {
     if (columnCount.value < 1) return;
     initColumns();
@@ -119,6 +128,7 @@ async function layoutDisplay () {
     }
 }
 
+// 等待 多張圖片下載完成
 async function awaitImagesLoaded () {
     if (columnCount.value < 1) return;
     const images = masonryRoot.value.querySelectorAll('img');
@@ -133,6 +143,7 @@ async function awaitImagesLoaded () {
     }
 }
 
+// 樣式 props 或 視窗 resize 時重新排列瀑布流
 async function resetDisplay () {
     if (columnCount.value < 1) return;
     columns.value = [];
