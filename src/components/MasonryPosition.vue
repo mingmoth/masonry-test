@@ -59,7 +59,7 @@ function initColumns () {
 }
 
 // 排第一排
-async function placeFirstRow () {
+function placeFirstRow () {
     for (let idx = 0; idx < columnCount.value; idx++) {
         itemsHeightCollection.value[idx].el.style.top = 0;
         const leftWidth = (itemsHeightCollection.value[idx].el.offsetWidth + gap.value) * (idx);
@@ -71,7 +71,7 @@ async function placeFirstRow () {
 }
 
 // 排後續排數
-async function placeSequenceRow () {
+function placeSequenceRow () {
     while (currentItemCount.value < itemsCount.value) {
         if (props.pattern === MASONRY_PATTERN.M) {
             placeMasonryOrder();
@@ -121,15 +121,15 @@ async function layoutDisplay () {
     initColumns();
     itemsHeightCollection.value = getItemsRef();
     if (currentItemCount.value < columns.value.length) {
-        await placeFirstRow();
-        await placeSequenceRow();
+        placeFirstRow();
+        placeSequenceRow();
     } else {
-        await placeSequenceRow();
+        placeSequenceRow();
     }
 }
 
 // 等待 多張圖片下載完成
-async function awaitImagesLoaded () {
+function awaitImagesLoaded () {
     if (columnCount.value < 1) return;
     const images = masonryRoot.value.querySelectorAll('img');
     let imagesLength = images.length;
@@ -145,13 +145,12 @@ async function awaitImagesLoaded () {
 
 // 樣式 props 改變 或 視窗 resize 時重新排列
 async function resetDisplay () {
+    console.log('reset');
     if (columnCount.value < 1) return;
     columns.value = [];
     currentItemCount.value = 0;
-    setTimeout(() => {
-        awaitImagesLoaded();
-        layoutDisplay();
-    });
+    await awaitImagesLoaded();
+    layoutDisplay();
 }
 
 onMounted(async () => {
@@ -166,9 +165,8 @@ onBeforeUnmount(() => {
 watch(
     [() => props.items],
     async () => {
-        setTimeout(() => {
-            layoutDisplay();
-        }, 1000);
+        await awaitImagesLoaded();
+        await resetDisplay();
     },
     { deep: true }
 );

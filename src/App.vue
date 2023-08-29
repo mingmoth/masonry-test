@@ -85,6 +85,7 @@ onMounted(async () => {
             :items="images"
             :column-count="columnOption"
             :pattern="masonryPattern"
+            :row-gap="20"
         >
             <template #default="{ item }">
                 <component
