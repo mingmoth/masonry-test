@@ -13,7 +13,11 @@ const props = defineProps({
         type: [Number, String],
         default: 1
     },
-    gap: {
+    gapX: {
+        type: [Number, String],
+        default: 12
+    },
+    gapY: {
         type: [Number, String],
         default: 12
     },
@@ -33,15 +37,17 @@ const masonryRoot = ref(null);
 const masonryCell = ref(null);
 
 // Data
-const columns = ref([]);
-const currentItemCount = ref(0);
+const columns = ref([]); // 記錄每列 items 總數，及 總高度
+const currentItemCount = ref(0); // 紀錄已排列的item數目
+const masonryHeight = ref(0); // 包裹瀑布流 items 的 wrapper 高度
 
 // Computed
-const columnCount = computed(() => Number(props.columnCount));
-const gap = computed(() => Number(props.gap));
+const columnCount = computed(() => Number(props.columnCount)); // 有幾列
+const gapX = computed(() => Number(props.gapX)); // 水平間距
+const gapY = computed(() => Number(props.gapY)); // 垂直間距
 
-const itemsCount = computed(() => props.items.length);
-const itemsHeightCollection = ref([]);
+const itemsCount = computed(() => props.items.length); // items 總數目
+const itemsHeightCollection = ref([]); // 取得 masonryCell refs 內各個 DOM 高度的集合
 
 // Functions
 
@@ -59,19 +65,22 @@ function initColumns () {
 }
 
 // 排第一排
-async function placeFirstRow () {
+function placeFirstRow () {
     for (let idx = 0; idx < columnCount.value; idx++) {
+        if (!itemsHeightCollection.value[idx]?.el) {
+            continue;
+        }
         itemsHeightCollection.value[idx].el.style.top = 0;
-        const leftWidth = (itemsHeightCollection.value[idx].el.offsetWidth + gap.value) * (idx);
+        const leftWidth = (itemsHeightCollection.value[idx].el.offsetWidth + gapX.value) * (idx);
         itemsHeightCollection.value[idx].el.style.left = `${leftWidth}px`;
-        columns.value[idx].height += itemsHeightCollection.value[idx].el.offsetHeight + gap.value;
+        columns.value[idx].height += itemsHeightCollection.value[idx].el.offsetHeight + gapY.value;
         columns.value[idx].cells += 1;
         currentItemCount.value++;
     }
 }
 
 // 排後續排數
-async function placeSequenceRow () {
+function placeSequenceRow () {
     while (currentItemCount.value < itemsCount.value) {
         if (props.pattern === MASONRY_PATTERN.M) {
             placeMasonryOrder();
@@ -87,7 +96,7 @@ function placeMasonryOrder () {
     const heightMap = columns.value.map(column => column.height);
     const minHeight = Math.min(...Object.values(heightMap));
     const minHeightIndex = heightMap.indexOf(minHeight);
-    const leftWidth = (itemsHeightCollection.value[currentItemCount.value].el.offsetWidth + gap.value) * (minHeightIndex);
+    const leftWidth = (itemsHeightCollection.value[currentItemCount.value].el.offsetWidth + gapX.value) * (minHeightIndex);
     placeItemPosition(minHeightIndex, leftWidth);
 }
 
@@ -96,7 +105,7 @@ function placeZPatternOrder () {
     const heightMap = columns.value.map(column => column.cells);
     const minCell = Math.min(...Object.values(heightMap));
     const minCellIndex = heightMap.indexOf(minCell);
-    const leftWidth = (itemsHeightCollection.value[currentItemCount.value].el.offsetWidth + gap.value) * (minCellIndex);
+    const leftWidth = (itemsHeightCollection.value[currentItemCount.value].el.offsetWidth + gapX.value) * (minCellIndex);
     placeItemPosition(minCellIndex, leftWidth);
 }
 
@@ -105,7 +114,7 @@ function placeItemPosition (index, width) {
     itemsHeightCollection.value[currentItemCount.value].el.style.top = `${columns.value[index].height}px`;
     itemsHeightCollection.value[currentItemCount.value].el.style.left = `${width}px`;
     columns.value[index].cells += 1;
-    columns.value[index].height += itemsHeightCollection.value[currentItemCount.value].el.offsetHeight + gap.value;
+    columns.value[index].height += itemsHeightCollection.value[currentItemCount.value].el.offsetHeight + gapY.value;
 }
 
 // 取得瀑布流 DOM 的 refs
@@ -117,20 +126,26 @@ function getItemsRef () {
 
 // 瀑布流排列
 async function layoutDisplay () {
-    if (columnCount.value < 1) return;
+    if (columnCount.value < 1) {
+        return;
+    }
     initColumns();
+    // 取得 masonryCell refs 內各個 DOM 高度的集合
     itemsHeightCollection.value = getItemsRef();
     if (currentItemCount.value < columns.value.length) {
         await placeFirstRow();
-        await placeSequenceRow();
-    } else {
-        await placeSequenceRow();
     }
+
+    await placeSequenceRow();
+    const columnHeights = columns.value.map(column => column.height);
+    masonryHeight.value = Math.max(...columnHeights);
 }
 
 // 等待 多張圖片下載完成
-async function awaitImagesLoaded () {
-    if (columnCount.value < 1) return;
+function awaitImagesLoaded () {
+    if (columnCount.value < 1) {
+        return;
+    }
     const images = masonryRoot.value.querySelectorAll('img');
     let imagesLength = images.length;
     for (let i = 0; i < images.length; i++) {
@@ -145,13 +160,13 @@ async function awaitImagesLoaded () {
 
 // 樣式 props 改變 或 視窗 resize 時重新排列
 async function resetDisplay () {
-    if (columnCount.value < 1) return;
+    if (columnCount.value < 1) {
+        return;
+    }
     columns.value = [];
     currentItemCount.value = 0;
-    setTimeout(() => {
-        awaitImagesLoaded();
-        layoutDisplay();
-    });
+    await awaitImagesLoaded();
+    layoutDisplay();
 }
 
 onMounted(async () => {
@@ -164,10 +179,11 @@ onBeforeUnmount(() => {
 });
 
 watch(
-    [() => props.items],
-    async () => {
+    () => props.items,
+    () => {
+        awaitImagesLoaded();
         setTimeout(() => {
-            layoutDisplay();
+            resetDisplay();
         }, 1000);
     },
     { deep: true }
@@ -175,10 +191,24 @@ watch(
 
 watch(
     [() => props.columnCount, () => props.pattern],
-    async () => {
-        await resetDisplay();
+    () => {
+        resetDisplay();
+        // nextTick(() => {
+        //     resetDisplay();
+        // });
     }
 );
+
+// onUpdated(() => {
+//     console.log('onUpdated');
+// });
+
+// watch(
+//     [() => props.columnCount, () => props.pattern],
+//     async () => {
+//         await resetDisplay();
+//     }
+// );
 </script>
 
 <template>
@@ -188,16 +218,17 @@ watch(
         class="masonry-root"
         :style="{
             '--column-count': columnCount,
-            '--gap': `${gap}px`
+            '--column-gap': `${gapX}px`,
+            'height': `${masonryHeight}px`
         }"
     >
         <div
-            v-for="item in items"
+            v-for="(item, index) in items"
             :key="item.id"
             ref="masonryCell"
             class="masonry-cell"
         >
-            <slot :item="item"></slot>
+            <slot name="item" :item="item" :index="index"></slot>
         </div>
     </div>
 </template>
@@ -209,7 +240,7 @@ watch(
 }
 
 .masonry-cell {
-    width: calc((100% - ((var(--column-count) - 1) * var(--gap))) / var(--column-count));
+    width: calc((100% - ((var(--column-count) - 1) * var(--column-gap))) / var(--column-count));
     position: absolute;
     height: auto;
 }
