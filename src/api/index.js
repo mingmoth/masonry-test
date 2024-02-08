@@ -35,3 +35,30 @@ export function debounce (fn, delay) {
         }, delay);
     };
 }
+
+export function throttle (fn, delay) {
+    console.log('throttle');
+    let shouldWait = false;
+    let waitingArgs;
+
+    const timeoutFn = () => {
+        if (waitingArgs === null) {
+            shouldWait = false;
+        } else {
+            fn(...waitingArgs);
+            waitingArgs = null;
+            setTimeout(timeoutFn, delay);
+        }
+    };
+
+    return (...args) => {
+        if (shouldWait) {
+            waitingArgs = args;
+            return;
+        }
+
+        fn(...args);
+        shouldWait = true;
+        setTimeout(timeoutFn, delay);
+    };
+}
