@@ -1,5 +1,6 @@
 <script>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue';
+// import { throttle } from '../api/index';
 
 const MASONRY_PATTERN = {
     M: 'm',
@@ -31,6 +32,7 @@ const props = defineProps({
 // DOM refs
 const masonryRoot = ref(null);
 const masonryCell = ref(null);
+const masonryHeight = ref(0);
 
 // Data
 const columns = ref([]);
@@ -116,7 +118,7 @@ function getItemsRef () {
 }
 
 // 瀑布流排列
-async function layoutDisplay () {
+function layoutDisplay () {
     if (columnCount.value < 1) return;
     initColumns();
     itemsHeightCollection.value = getItemsRef();
@@ -126,6 +128,8 @@ async function layoutDisplay () {
     } else {
         placeSequenceRow();
     }
+    const columnHeights = columns.value.map(column => column.height);
+    masonryHeight.value = Math.max(...columnHeights);
 }
 
 // 等待 多張圖片下載完成
@@ -133,6 +137,7 @@ function awaitImagesLoaded () {
     if (columnCount.value < 1) return;
     const images = masonryRoot.value.querySelectorAll('img');
     let imagesLength = images.length;
+    console.log('imagesLength', imagesLength);
     for (let i = 0; i < images.length; i++) {
         images[i].onload = function () {
             imagesLength--;
@@ -156,37 +161,47 @@ async function resetDisplay () {
 onMounted(async () => {
     await awaitImagesLoaded();
     window.addEventListener('resize', resetDisplay);
+    // window.addEventListener('scroll', throttle(resetDisplay, 10000));
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', resetDisplay);
+    // window.removeEventListener('scroll', throttle(resetDisplay, 10000));
 });
 
 watch(
-    [() => props.items],
-    async () => {
-        await awaitImagesLoaded();
-        await resetDisplay();
+    [() => props.items, () => props.columnCount, () => props.pattern],
+    () => {
+        awaitImagesLoaded();
+        setTimeout(() => {
+            resetDisplay();
+        }, 1000);
     },
     { deep: true }
 );
 
-watch(
-    [() => props.columnCount, () => props.pattern],
-    async () => {
-        await resetDisplay();
-    }
-);
+onUpdated(() => {
+    console.log('onUpdated');
+});
+
+// watch(
+//     [() => props.columnCount, () => props.pattern],
+//     async () => {
+//         await resetDisplay();
+//     }
+// );
 </script>
 
 <template>
     <div
         v-if="columnCount >= 1"
+        id="masonryRoot"
         ref="masonryRoot"
         class="masonry-root"
         :style="{
             '--column-count': columnCount,
-            '--gap': `${gap}px`
+            '--gap': `${gap}px`,
+            'height': `${masonryHeight}px`
         }"
     >
         <div
