@@ -87,7 +87,7 @@ onMounted(async () => {
             :pattern="masonryPattern"
             :row-gap="20"
         >
-            <template #default="{ item }">
+            <template #item="{ item }">
                 <component
                     :is="item?.cardtype === 'item' ? CardItem : CardPure"
                     :card="item"
