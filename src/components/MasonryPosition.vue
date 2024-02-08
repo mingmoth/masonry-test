@@ -226,4 +226,15 @@ onUpdated(() => {
     position: absolute;
     height: auto;
 }
+
+.masonry-loading {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 2;
+    background: white;
+    opacity: 0.5;
+    height: 100%;
+    width: 100%;
+}
 </style>
