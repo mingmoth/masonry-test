@@ -30,7 +30,7 @@ const masonryPatterns = [
     }
 ];
 
-const columnOption = ref(2);
+const columnOption = ref(5);
 const masonryPattern = ref('m');
 
 const images = ref([]);
