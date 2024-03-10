@@ -3,14 +3,7 @@ import { onMounted, ref } from 'vue';
 import getImages from './api';
 // import useMasonry from './hook/masonry';
 
-// common
-// import DividerLine from './components/DividerLine.vue';
-
 // masonry
-// import MasonryColumn from './components/MasonryColumn.vue';
-// import MasonryRoot from './components/MasonryRoot.vue';
-// import MasonryOrder from './components/MsonryOrder.vue';
-// import OrderMasonry from './components/OrderMasonry.vue';
 import MasonryPosition from './components/MasonryPosition.vue';
 
 // card
@@ -34,11 +27,8 @@ const columnOption = ref(5);
 const masonryPattern = ref('m');
 
 const images = ref([]);
-// const resortedImages = ref([]);
 const isLoading = ref(true);
 const currentPage = ref(3);
-
-// const { columnCounts, getSortArray } = useMasonry();
 
 async function getNextPageImages () {
     currentPage.value += 1;
@@ -81,7 +71,7 @@ onMounted(async () => {
                 </select>
             </label>
         </div>
-        <h1>App</h1>
+        <h1>Masonry Demo</h1>
         <MasonryPosition
             v-if="!isLoading"
             ref="masonry"
@@ -98,86 +88,6 @@ onMounted(async () => {
                 />
             </template>
         </MasonryPosition>
-        <!-- <OrderMasonry
-            v-if="!isLoading"
-            :items="images"
-            :column-count="2"
-            pattern="m"
-        >
-            <template #default="{ item }">
-                <component
-                    :is="item.cardtype === 'item' ? CardItem : CardPure"
-                    :card="item"
-                />
-            </template>
-        </OrderMasonry> -->
-        <!-- <MasonryOrder
-            v-if="!isLoading"
-            :items="images"
-            :column-count="columnOption"
-            :pattern="masonryPattern"
-        >
-            <template #default="{ item }">
-                <component
-                    :is="item.cardtype === 'item' ? CardItem : CardPure"
-                    :card="item"
-                />
-            </template>
-        </MasonryOrder> -->
-        <!-- <MasonryRoot
-            v-if="!isLoading"
-            :images="images"
-            :columnCount="columnOption"
-        >
-            <div
-                v-for="(image) in images"
-                :key="image.id"
-                class="masonry-item"
-            >
-                <component
-                    :is="image.cardtype === 'item' ? CardItem : CardPure"
-                    :card="image"
-                    class="masonry-cell"
-                />
-            </div>
-        </MasonryRoot> -->
-        <!-- <MasonryColumn>
-            <component
-                v-for="image in resortedImages"
-                :key="image.id"
-                :is="image.isLoading ? LoadingCard : CardItem"
-                :card="image"
-            />
-        </MasonryColumn> -->
-        <!-- <DividerLine /> -->
-        <!-- <MasonryWall :items="images" :gap="16" :min-columns="1" :max-columns="5" :column-width="220">
-            <template #default="{ item }">
-                <component
-                    :is="item.cardtype === 'item' ? CardItem : CardPure"
-                    :card="item"
-                />
-            </template>
-        </MasonryWall> -->
-        <!-- <DividerLine />
-        <div
-            v-masonry
-            transition-duration="0"
-            item-selector=".masonry-container__item"
-            class="masonry-container"
-            gutter="16"
-            fit-width="true"
-            column-width="230"
-            horizontal-order="true"
-        >
-            <component
-                v-masonry-tile
-                class="masonry-container__item"
-                v-for="(image) in images"
-                :key="image.id"
-                :is="image.isLoading ? LoadingCard : CardItem"
-                :card="image"
-            />
-        </div> -->
         <button
             class="load-more"
             @click="getNextPageImages()"
