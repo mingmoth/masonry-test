@@ -161,9 +161,9 @@ async function resetDisplay () {
     layoutDisplay();
 }
 
-const emitLoad = () => {
-    debounce(resetDisplay, 0)();
-};
+const emitLoad = debounce(() => {
+    resetDisplay();
+}, 1000);
 
 onMounted(async () => {
     window.addEventListener('resize', resetDisplay);
