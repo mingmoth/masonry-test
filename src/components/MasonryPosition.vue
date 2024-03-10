@@ -1,5 +1,6 @@
 <script>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { debounce } from '../api';
 
 const MASONRY_PATTERN = {
     M: 'm',
@@ -42,6 +43,14 @@ const currentItemCount = ref(0); // 紀錄已排列的item數目
 const masonryHeight = ref(0); // 包裹瀑布流 items 的 wrapper 高度
 
 // Computed
+const children = computed(() => {
+    return props.items.map(item => {
+        return {
+            ...item,
+            loaded: emitLoad
+        };
+    });
+});
 const columnCount = computed(() => Number(props.columnCount)); // 有幾列
 const gapX = computed(() => Number(props.gapX)); // 水平間距
 const gapY = computed(() => Number(props.gapY)); // 垂直間距
@@ -141,23 +150,6 @@ async function layoutDisplay () {
     masonryHeight.value = Math.max(...columnHeights);
 }
 
-// 等待 多張圖片下載完成
-function awaitImagesLoaded () {
-    if (columnCount.value < 1) {
-        return;
-    }
-    const images = masonryRoot.value.querySelectorAll('img');
-    let imagesLength = images.length;
-    for (let i = 0; i < images.length; i++) {
-        images[i].onload = function () {
-            imagesLength--;
-            if (imagesLength === 0) {
-                layoutDisplay();
-            }
-        };
-    }
-}
-
 // 樣式 props 改變 或 視窗 resize 時重新排列
 async function resetDisplay () {
     if (columnCount.value < 1) {
@@ -165,12 +157,15 @@ async function resetDisplay () {
     }
     columns.value = [];
     currentItemCount.value = 0;
-    await awaitImagesLoaded();
+    console.log('resetDisplay');
     layoutDisplay();
 }
 
+const emitLoad = () => {
+    debounce(resetDisplay, 0)();
+};
+
 onMounted(async () => {
-    await awaitImagesLoaded();
     window.addEventListener('resize', resetDisplay);
 });
 
@@ -178,37 +173,27 @@ onBeforeUnmount(() => {
     window.removeEventListener('resize', resetDisplay);
 });
 
+// watch(
+//     () => props.items,
+//     () => {
+//         nextTick(() => {
+//             resetDisplay();
+//         });
+//     },
+//     { deep: true }
+// );
+
 watch(
-    () => props.items,
+    [() => props.columnCount, () => props.items, () => props.pattern],
     () => {
-        awaitImagesLoaded();
-        setTimeout(() => {
+        console.log('nextTick');
+        nextTick(() => {
             resetDisplay();
-        }, 1000);
+        });
     },
     { deep: true }
 );
 
-watch(
-    [() => props.columnCount, () => props.pattern],
-    () => {
-        resetDisplay();
-        // nextTick(() => {
-        //     resetDisplay();
-        // });
-    }
-);
-
-// onUpdated(() => {
-//     console.log('onUpdated');
-// });
-
-// watch(
-//     [() => props.columnCount, () => props.pattern],
-//     async () => {
-//         await resetDisplay();
-//     }
-// );
 </script>
 
 <template>
@@ -223,12 +208,12 @@ watch(
         }"
     >
         <div
-            v-for="(item, index) in items"
+            v-for="(item, index) in children"
             :key="item.id"
             ref="masonryCell"
             class="masonry-cell"
         >
-            <slot name="item" :item="item" :index="index"></slot>
+            <slot name="item" :item="item" :index="index" :loaded="emitLoad" ></slot>
         </div>
     </div>
 </template>

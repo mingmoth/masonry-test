@@ -51,6 +51,10 @@ onMounted(async () => {
     isLoading.value = false;
 });
 
+const parentLoad = (item) => {
+    item.loaded();
+};
+
 </script>
 
 <template>
@@ -91,6 +95,7 @@ onMounted(async () => {
                 <component
                     :is="item?.cardtype === 'item' ? CardItem : CardPure"
                     :card="item"
+                    @loaded="parentLoad(item)"
                 />
             </template>
         </MasonryPosition>
