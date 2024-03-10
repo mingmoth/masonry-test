@@ -46,14 +46,12 @@ async function getNextPageImages () {
     images.value.push(...fetchImages);
 }
 
+const masonry = ref(null);
+
 onMounted(async () => {
     await getNextPageImages();
     isLoading.value = false;
 });
-
-const parentLoad = (item) => {
-    item.loaded();
-};
 
 </script>
 
@@ -86,6 +84,7 @@ const parentLoad = (item) => {
         <h1>App</h1>
         <MasonryPosition
             v-if="!isLoading"
+            ref="masonry"
             :items="images"
             :column-count="columnOption"
             :pattern="masonryPattern"
@@ -95,7 +94,7 @@ const parentLoad = (item) => {
                 <component
                     :is="item?.cardtype === 'item' ? CardItem : CardPure"
                     :card="item"
-                    @loaded="parentLoad(item)"
+                    @loaded="masonry?.emitLoad"
                 />
             </template>
         </MasonryPosition>

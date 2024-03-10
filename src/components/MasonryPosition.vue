@@ -43,14 +43,6 @@ const currentItemCount = ref(0); // 紀錄已排列的item數目
 const masonryHeight = ref(0); // 包裹瀑布流 items 的 wrapper 高度
 
 // Computed
-const children = computed(() => {
-    return props.items.map(item => {
-        return {
-            ...item,
-            loaded: emitLoad
-        };
-    });
-});
 const columnCount = computed(() => Number(props.columnCount)); // 有幾列
 const gapX = computed(() => Number(props.gapX)); // 水平間距
 const gapY = computed(() => Number(props.gapY)); // 垂直間距
@@ -163,7 +155,11 @@ async function resetDisplay () {
 
 const emitLoad = debounce(() => {
     resetDisplay();
-}, 1000);
+}, 0);
+
+defineExpose({
+    emitLoad
+});
 
 onMounted(async () => {
     window.addEventListener('resize', resetDisplay);
@@ -200,12 +196,12 @@ watch(
         }"
     >
         <div
-            v-for="(item, index) in children"
+            v-for="(item, index) in items"
             :key="item.id"
             ref="masonryCell"
             class="masonry-cell"
         >
-            <slot name="item" :item="item" :index="index" :loaded="emitLoad" ></slot>
+            <slot name="item" :item="item" :index="index" ></slot>
         </div>
     </div>
 </template>
