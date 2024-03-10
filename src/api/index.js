@@ -24,7 +24,7 @@ export function sleep (delay) {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-export function debounce (fn, wait) {
+export function debounce (fn, wait = 0) {
     console.log('debounce');
     let timer;
     return function (...args) {

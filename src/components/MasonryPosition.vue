@@ -167,21 +167,14 @@ const emitLoad = () => {
 
 onMounted(async () => {
     window.addEventListener('resize', resetDisplay);
+    nextTick(() => {
+        layoutDisplay();
+    });
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', resetDisplay);
 });
-
-// watch(
-//     () => props.items,
-//     () => {
-//         nextTick(() => {
-//             resetDisplay();
-//         });
-//     },
-//     { deep: true }
-// );
 
 watch(
     [() => props.columnCount, () => props.items, () => props.pattern],
@@ -190,8 +183,7 @@ watch(
         nextTick(() => {
             resetDisplay();
         });
-    },
-    { deep: true }
+    }
 );
 
 </script>
