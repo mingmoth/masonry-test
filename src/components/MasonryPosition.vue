@@ -142,7 +142,7 @@ async function layoutDisplay () {
     masonryHeight.value = Math.max(...columnHeights);
 }
 
-// 樣式 props 改變 或 視窗 resize 時重新排列
+// 重新排列
 async function resetDisplay () {
     if (columnCount.value < 1) {
         return;
@@ -155,7 +155,7 @@ async function resetDisplay () {
 
 const emitLoad = debounce(() => {
     resetDisplay();
-}, 0);
+}, 200);
 
 defineExpose({
     emitLoad
