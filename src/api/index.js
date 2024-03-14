@@ -24,15 +24,17 @@ export function sleep (delay) {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-export function debounce (fn, delay) {
+export function debounce (fn, wait = 0) {
     console.log('debounce');
-    let timeout;
+    let timer;
     return function (...args) {
-        const context = this;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            fn.apply(context, args);
-        }, delay);
+        if (timer) {
+            clearTimeout(timer); // clear any pre-existing timer
+        }
+        const context = this; // get the current context
+        timer = setTimeout(() => {
+            fn.apply(context, args); // call the function if time expires
+        }, wait);
     };
 }
 

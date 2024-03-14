@@ -16,6 +16,7 @@ const card = computed(() => props.card);
             :src="card.download_url"
             alt="card-url"
             class="card-image"
+            @load="$emit('loaded')"
         >
         <figcaption class="card-desc">
             <b>{{ card.author }}</b>

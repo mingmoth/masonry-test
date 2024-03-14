@@ -1,5 +1,6 @@
 <script>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { debounce } from '../api';
 
 const MASONRY_PATTERN = {
     M: 'm',
@@ -141,37 +142,30 @@ async function layoutDisplay () {
     masonryHeight.value = Math.max(...columnHeights);
 }
 
-// 等待 多張圖片下載完成
-function awaitImagesLoaded () {
-    if (columnCount.value < 1) {
-        return;
-    }
-    const images = masonryRoot.value.querySelectorAll('img');
-    let imagesLength = images.length;
-    for (let i = 0; i < images.length; i++) {
-        images[i].onload = function () {
-            imagesLength--;
-            if (imagesLength === 0) {
-                layoutDisplay();
-            }
-        };
-    }
-}
-
-// 樣式 props 改變 或 視窗 resize 時重新排列
+// 重新排列
 async function resetDisplay () {
     if (columnCount.value < 1) {
         return;
     }
     columns.value = [];
     currentItemCount.value = 0;
-    await awaitImagesLoaded();
+    console.log('resetDisplay');
     layoutDisplay();
 }
 
+const emitLoad = debounce(() => {
+    resetDisplay();
+}, 200);
+
+defineExpose({
+    emitLoad
+});
+
 onMounted(async () => {
-    await awaitImagesLoaded();
     window.addEventListener('resize', resetDisplay);
+    nextTick(() => {
+        layoutDisplay();
+    });
 });
 
 onBeforeUnmount(() => {
@@ -179,36 +173,15 @@ onBeforeUnmount(() => {
 });
 
 watch(
-    () => props.items,
+    [() => props.columnCount, () => props.items, () => props.pattern],
     () => {
-        awaitImagesLoaded();
-        setTimeout(() => {
+        console.log('nextTick');
+        nextTick(() => {
             resetDisplay();
-        }, 1000);
-    },
-    { deep: true }
-);
-
-watch(
-    [() => props.columnCount, () => props.pattern],
-    () => {
-        resetDisplay();
-        // nextTick(() => {
-        //     resetDisplay();
-        // });
+        });
     }
 );
 
-// onUpdated(() => {
-//     console.log('onUpdated');
-// });
-
-// watch(
-//     [() => props.columnCount, () => props.pattern],
-//     async () => {
-//         await resetDisplay();
-//     }
-// );
 </script>
 
 <template>
@@ -228,7 +201,7 @@ watch(
             ref="masonryCell"
             class="masonry-cell"
         >
-            <slot name="item" :item="item" :index="index"></slot>
+            <slot name="item" :item="item" :index="index" ></slot>
         </div>
     </div>
 </template>
